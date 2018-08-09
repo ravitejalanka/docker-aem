@@ -1,0 +1,13 @@
+publish:
+    image: aem-publish
+    ports:
+        - "4503:4503"
+
+author:
+    image: aem-author
+    ports:
+        - "4502:4502"
+    links:
+        - publish
+
+

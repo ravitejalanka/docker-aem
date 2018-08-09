@@ -1,0 +1,10 @@
+# Dockerized AEM 6.3 author image
+
+FROM aem-base:latest
+
+ENV CQ_RUNMODE publish
+ENV CQ_PORT 4503
+ENV CQ_JVM_OPTS   "-server -Xmx1524M -Xms512M -XX:MaxPermSize=512M"
+EXPOSE $CQ_PORT
+
+CMD java $CQ_JVM_OPTS -jar $AEM_QUICKSTART_FILE -p $CQ_PORT -r $CQ_RUNMODE -verbose -nofork

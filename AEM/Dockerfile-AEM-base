@@ -1,0 +1,41 @@
+# Dockerized AEM 6.3 base image
+
+FROM ubuntu:16.04
+
+ENV AEM_VERSION 6.3
+ENV AEM_QUICKSTART_FILE aem-quickstart-6.3.jar
+ENV AEM_USER ravi
+ENV AEM_WORKING_DIR /opt/aem
+ENV DEBIAN_FRONTEND noninteractive
+ENV JAVA_VERSION 8
+ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
+
+# This is in accordance to : https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-get-on-ubuntu-16-04
+RUN apt-get update && \
+	apt-get install -y curl && \
+	apt-get install -y openjdk-8-jdk && \
+	apt-get clean && \
+	rm -rf /var/lib/apt/lists/* && \
+	rm -rf /var/cache/oracle-jdk8-installer;
+	
+# Fix certificate issues, found as of 
+# https://bugs.launchpad.net/ubuntu/+source/ca-certificates-java/+bug/983302
+RUN apt-get update && \
+	apt-get install -y ca-certificates-java && \
+	apt-get clean && \
+	update-ca-certificates -f && \
+  rm -rf /var/lib/apt/lists/* && \
+	rm -rf /var/cache/oracle-jdk8-installer;
+
+# Add quick-start file and license properties
+ADD ./$AEM_QUICKSTART_FILE $AEM_WORKING_DIR/$AEM_QUICKSTART_FILE
+ADD ./license.properties $AEM_WORKING_DIR/license.properties
+
+# Create user and unpack AEM quick-start
+RUN groupadd -r $AEM_USER && useradd -r -g $AEM_USER $AEM_USER -d $AEM_WORKING_DIR && \
+    java -jar $AEM_WORKING_DIR/$AEM_QUICKSTART_FILE -unpack && \
+    chown -R $AEM_USER:$AEM_USER $AEM_WORKING_DIR
+
+USER $AEM_USER
+
+WORKDIR $AEM_WORKING_DIR
